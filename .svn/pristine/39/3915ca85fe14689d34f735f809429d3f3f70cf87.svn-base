@@ -1,0 +1,55 @@
+<?php
+namespace Home\Model;
+use Think\Model;
+class CartModel extends Model{
+	//加入购物车
+	public function addCart($goods_id, $goods_attr_ids, $number){
+		//保存数据到购物车
+		//判断登录状态
+		if( session('?user_info') ){
+			//已登录，将数据保存到数据表
+			//获取用户id
+			$user_id = session('user_info.id');
+			//添加数据到数据表时，先判断数据表中是否存在相同的购物记录（不包含数量）
+			//数据表中，确定一条唯一的购物记录 goods_id goods_attr_ids user_id
+			$data = array(
+				'goods_id' => $goods_id,
+				'goods_attr_ids' => $goods_attr_ids,
+				'user_id' => $user_id
+			);
+			$cart_info = $this -> where($data) -> find();
+			if($cart_info){
+				//已经存在相同购物记录，累加数量即可
+				$cart_info['number'] += $number;
+				$res = $this -> save($cart_info);
+				// if($res !== false){
+				// 	return true;
+				// }else{
+				// 	return false;
+				// }
+				return $res !== false ? true : false;
+			}else{
+				//没有相同的购物记录，直接添加一条新的记录
+				$data['number'] = $number;
+				$res = $this -> add($data);
+				return $res ? true : false;
+			}
+		}else{
+			//未登录，将数据保存到cookie
+			//从cookie取出原来的购物车数据, 如果有数据，反序列化为数组
+			$cart = cookie('cart') ? unserialize( cookie('cart') ) : array();
+			//拼接键值对中的键
+			$key = $goods_id . '-' . $goods_attr_ids;
+			//判断cookie购物车数据中是否已有相同的记录
+			if($cart[$key]){
+				//已经存在相同记录, 累加数量
+				$cart[$key] += $number;
+			}else{
+				//不存在相同记录,向购物车数组中添加一个键值对
+				$cart[$key] = $number;
+			}
+			//需要将购物车数组转化为字符串,重新保存到cookie
+			cookie( 'cart', serialize($cart) );
+		}
+	}
+}

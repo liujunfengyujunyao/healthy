@@ -1,0 +1,13 @@
+<?php
+namespace Home\Controller;
+use Think\Controller;
+class IndexController extends Controller {
+    public function index(){
+    	//调用模板文件
+    	// $this -> display();//不传递参数，默认取控制器名和方法名，去View目录找
+    	
+    	$this -> display('index');//传递参数 模板文件名称（不带后缀）
+
+    	// $this -> diaplsy("/Index/index");//传递参数 /View下的子目录名称/模板文件名称（不带后缀）
+    }
+}

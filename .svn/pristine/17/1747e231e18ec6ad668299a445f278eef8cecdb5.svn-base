@@ -1,0 +1,103 @@
+<?php
+namespace Home\Controller;
+use Think\Controller;
+class CartController extends Controller{
+	public function addcart(){
+		$data = I('post.');
+		// dump($data);die;
+		//调用模型中的addCart方法，加入购物车
+		$res = D('Cart') -> addCart($data['goods_id'], $data['goods_attr_ids'], $data['number']);
+		//加入之后
+		if($res){
+			//成功
+			//查询商品基本信息
+			$goods = D('Goods') -> where( ['id' => $data['goods_id']] ) -> find();
+			$this -> assign('goods', $goods);
+			$this -> display();
+		}else{
+			//加入失败
+			$this -> error('加入失败');
+		}
+	}
+	//购物车列表
+	public function index(){
+		//调用Cart模型getAllCart方法获取购物车数据
+		$data = D('Cart') -> getAllCart();
+		//遍历数组，为每一条数据，查询商品基本信息，查询商品属性信息
+		foreach($data as $k => &$v){
+			//查询商品基本信息
+			$goods = D('Goods') -> where(['id' => $v['goods_id']]) -> find();
+			$v['goods_name'] = $goods['goods_name'];
+			$v['goods_small_img'] = $goods['goods_small_img'];
+			$v['goods_price'] = $goods['goods_price'];
+			//查询商品属性值信息
+			$attrs = D('GoodsAttr') -> alias('t1') -> field('t1.*,t2.attr_name') -> join('left join tpshop_attribute t2 on t1.attr_id = t2.attr_id') -> where("t1.id in ({$v['goods_attr_ids']})") -> select();
+			$v['goods_attr'] = $attrs;
+		}
+		// dump($data);die;
+		$this -> assign('data', $data);
+		$this -> display();
+	}
+	//ajax获取购买总数量
+	public function ajaxgetnum(){
+		//调用Cart模型的getNumber方法
+		$total_number = D('Cart') -> getNumber();
+		//返回数据
+		$return = array(
+			'code' => 10000,
+			'msg' => 'success',
+			'total_number' => $total_number
+		);
+		$this -> ajaxReturn($return);
+	}
+
+	//ajax修改购物记录的购买数量
+	public function ajaxchangenum(){
+		$data = I('post.');
+		//直接调用Cart模型的changeNumber方法
+		$res = D('Cart') -> changeNumber($data['goods_id'], $data['goods_attr_ids'], $data['number']);
+		if($res){
+			//修改成功
+			//重新获取购物车中的总数量，用于更新页面头部显示
+			$total_number = D('Cart') -> getNumber();
+			$return = array(
+				'code' => 10000,
+				'msg' => 'success',
+				'total_number' => $total_number
+			);
+			$this -> ajaxReturn($return);
+		}else{
+			//修改失败
+			$return = array(
+				'code' => 10001,
+				'msg' => '修改失败'
+			);
+			$this -> ajaxReturn($return);
+		}
+	}
+
+	//ajax删除指定购物记录
+	public function ajaxdelcart(){
+		$data = I('post.');
+		//调用Cart模型delCart()方法
+		$res = D('Cart') -> delCart($data['goods_id'], $data['goods_attr_ids']);
+		if($res){
+			//删除成功
+			//重新获取购物车中的总数量，用于更新页面头部显示
+			$total_number = D('Cart') -> getNumber();
+			$return = array(
+				'code' => 10000,
+				'msg' => 'success',
+				'total_number' => $total_number
+			);
+			$this -> ajaxReturn($return);
+		}else{
+			//删除失败
+			$return = array(
+				'code' => 10001,
+				'msg' => '删除失败'
+			);
+			$this -> ajaxReturn($return);
+		}
+	}
+}

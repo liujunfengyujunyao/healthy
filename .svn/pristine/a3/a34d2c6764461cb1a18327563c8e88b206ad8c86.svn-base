@@ -1,0 +1,44 @@
+<?php
+namespace Admin\Controller;
+class AuthController extends CommonController{
+	public function index(){
+		//查询所有的权限数据
+		$auth = D('Auth') -> select();
+		//利用无限极分类递归思想，重新排序
+		// dump($auth);
+		$auth = getTree($auth);
+		// dump($auth);die;
+		$this -> assign('auth', $auth);
+		$this -> display();
+	}
+
+	//权限新增
+	public function add(){
+		//一个方法处理两个逻辑
+		if(IS_POST){
+			//处理表单提交
+			$data = I('post.');
+			$model = D('Auth');
+			$create = $model -> create($data);
+			if(!$create){
+				//创建数据失败，获取错误信息并提示
+				$error = $model -> getError();
+				$this -> error($error);
+			}
+			$res = $model -> add();
+			if($res){
+				//新增成功
+				$this -> success('新增成功', U('Admin/Auth/index'));
+			}else{
+				//新增失败
+				$this -> error('新增失败');
+			}
+		}else{
+			//查询所有的顶级权限
+			$top = D('Auth') -> where("pid = 0") -> select();
+			$this -> assign('top', $top);
+			$this -> display();
+		}
+		
+	}
+}

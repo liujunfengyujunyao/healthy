@@ -1,0 +1,28 @@
+<?php
+//①声明命名空间 Home是当前分组目录名，Controller是控制器目录名
+namespace Home\Controller;
+//②引入控制器父类 Think是命名空间，对应ThinkPHP/Library/Think目录 Controller是控制器父类名称
+use Think\Controller;
+//③声明当前控制器类，继承控制器父类  当前控制器类名和文件名必须保持一致
+class TestController extends Controller{
+	//声明一些方法
+	public function index(){
+		// echo "Hello,This is Test-index";
+		//接收url中的参数
+		// echo $_GET['id'];
+
+		//U函数动态生成url
+		echo U("Home/Test/index", "id=100&page=10", true, false), "<br>";
+
+		echo U("Home/Test/index", "id=100&page=10", false, false), "<br>";
+
+		echo U("Home/Test/index", "id=100&page=10", true, true), "<br>";
+	}
+
+	public function test(){
+		$person = array('name' => 'kongkong', 'age' => 500);
+		// echo '<pre>';
+		// var_dump($person);
+		dump($person)
+	}
+}

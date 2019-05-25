@@ -1,0 +1,178 @@
+<?php
+namespace Admin\Controller;
+use Think\Controller;
+class GoodsController extends CommonController{
+	//列表页
+	public function index(){
+		$model = D('Goods');
+		// dump($model);die;
+		//分页实现
+		//获取总记录数
+		$total = $model -> count();
+		$pagesize = 3;
+		//实例化分页类
+		$page = new \Think\Page($total, $pagesize);
+		//定制分页栏的显示
+		$page -> setConfig('prev', '上一页');
+		$page -> setConfig('next', '下一页');
+		$page -> setConfig('first', '首页');
+		$page -> setConfig('last', '尾页');
+		$page -> setConfig('theme', '%HEADER% %FIRST% %UP_PAGE% %LINK_PAGE% %DOWN_PAGE% %END%');
+		$page -> rollPage = 3;//根据实际情况
+		$page -> lastSuffix = false;
+		//调用show方法获取分页栏代码
+		$page_html = $page -> show();
+		$this -> assign('page_html', $page_html);
+		//查询数据
+		$data = $model -> limit($page -> firstRow, $page -> listRows) -> select();
+		// $data = D('Goods') -> select();
+		// dump(D('Goods') -> getLastSql());die;
+		// dump(D('Goods') -> _sql());die;
+		//变量赋值
+		$this -> assign('data', $data);
+		$this -> display();
+	}
+	//新增页面
+	public function add(){
+		//一个方法处理两个业务逻辑 展示页面逻辑 form表单处理
+		//判断请求方式
+		if(IS_POST){
+			//处理表单提交
+			//接收数据
+			$data = I('post.');//$_POST
+			// dump($_POST);
+			// dump($data);die;
+			//针对富文本编辑器字段做特殊处理
+			$data['goods_introduce'] = $_POST['goods_introduce'];
+			// $data['goods_introduce'] = I('post.goods_introduce', '', 'trim');
+			// $data['goods_create_time'] = time();
+			//文件上传 $_FILES
+			// dump($_FILES);die;
+			if(!isset($_FILES['logo']) || $_FILES['logo']['error'] != 0){
+				//需要上传logo图片
+				$this -> error('logo图片上传失败');
+			}
+			//使用Upload类进行文件上传
+			//自定义配置数组 实例化Upload类
+			$config = array(
+				'maxSize'       =>  5 * 1024 * 1024, //上传的文件大小限制 (0-不做限制)
+        		'exts'          =>  array('jpg', 'png', 'gif', 'jpeg'), //允许上传的文件后缀
+        		'rootPath'      =>  ROOT_PATH . UPLOAD_PATH, //保存根路径
+			);
+			$upload = new \Think\Upload($config);
+			//使用uploadOne完成文件上传
+			$upload_res = $upload -> uploadOne($_FILES['logo']);
+			if(!$upload_res){
+				//文件上传失败,调用upload类的getError方法获取错误信息
+				$error = $upload -> getError();
+				$this -> error($error);
+			}
+			// dump($upload_res);die;
+			$data['goods_big_img'] = UPLOAD_PATH . $upload_res['savepath'] . $upload_res['savename'];
+			//生成缩略图
+			//实例化Image类
+			$image = new \Think\Image();
+			//调用open方法打开原始图片
+			$image -> open( ROOT_PATH . $data['goods_big_img'] );
+			//调用thumb方法生成缩略图 这里的尺寸一般根据前台网页的显示来确定
+			$image -> thumb(188, 188);
+			//确定缩略图的保存路径及名称
+			$goods_small_img = UPLOAD_PATH . $upload_res['savepath'] . 'thumb_' . $upload_res['savename'];
+			//调用save方法保存新的缩略图
+			$image -> save( ROOT_PATH . $goods_small_img);
+			//把缩略图的路径保存到数据表（这里添加到data中即可）
+			$data['goods_small_img'] = $goods_small_img;
+			//添加数据
+			$model = D('Goods');
+			//使用create方法自动创建数据集
+			$create = $model -> create($data);
+			// $create = $model -> create();
+			//创建失败，返回false
+			if(!$create){
+				//从模型中获取失败信息
+				$error = $model -> getError();
+				$this -> error($error);
+			}
+			$res = $model -> add();
+			// $res = $model -> add($data);
+			//判断返回结果
+			if($res){
+				//添加成功
+				$this -> success('添加成功', U('Admin/Goods/index'), 1);
+			}else{
+				//添加失败
+				$this -> error('添加失败');
+			}
+		}else{
+			//展示页面
+			$this -> display();
+		}
+	}
+	//修改页面
+	public function edit(){
+		//一个方法处理两个业务逻辑
+		if(IS_POST){
+			//表单提交
+			//接收数据
+			$data = I('post.');
+			//修改数据表中的记录
+			$model = D('Goods');
+			$res = $model -> save($data);
+			// dump($res);die;
+			//$res 是受影响的记录条数
+			if($res !== false){
+				//修改成功
+				$this -> success('修改成功', U('Admin/Goods/index'));
+			}else{
+				//修改失败
+				$this -> error('修改失败');
+			}
+		}else{
+			//展示页面
+			//接收数据
+			$id = I('get.id');
+			//查询数据
+			$goods = D('Goods') -> where(['id' => $id]) -> find();
+			$this -> assign('goods', $goods);
+			$this -> display();
+		}
+		
+	}
+	//详情页面
+	public function detail(){
+		//接收id参数
+		$id = I('get.id');
+		//查询该商品的基本信息
+		$info = D('Goods') -> where( ['id' => $id] ) -> find();
+		$this -> assign('info', $info);
+		//根据goods_id 查询线上销售额
+		$sales = D('Saleonline') -> where(['goods_id' => $id]) -> order('month asc') -> select();
+		$data = array();
+		foreach($sales as $k => $v){
+			//插件中要求的数据必须是数字类型的
+			$data[] = floatval($v['money']);
+		}
+		//分析：如果能够得到 索引数组，就可以进行json转化，直接放到页面展示。
+		// $data = array(1,2,3,4,5);
+		// dump($data);die;
+		$this -> assign('data', json_encode($data) );
+		$this -> display();
+	}
+
+	//删除方法
+	public function del(){
+		//接收参数
+		$id = I('get.id');
+		//删除数据
+		$model = D('Goods');
+		$res = $model -> where(['id' => $id]) -> delete();
+		//成功时 $res 是受影响的记录条数
+		if($res !== false){
+			//删除成功
+			$this -> success('删除成功', U('Admin/Goods/index'));
+		}else{
+			//删除失败
+			$this -> error('删除失败');
+		}
+	}
+}

@@ -1,0 +1,103 @@
+<?php
+namespace Admin\Controller;
+use Think\Controller;
+class GoodsController extends CommonController{
+	//列表页
+	public function index(){
+		$model = D('Goods');
+		// dump($model);die;
+		//查询数据
+		$data = D('Goods') -> select();
+		dump(D('Goods') -> getLastSql());die;
+		dump(D('Goods') -> _sql());die;
+		//变量赋值
+		$this -> assign('data', $data);
+		$this -> display();
+	}
+	//新增页面
+	public function add(){
+		//一个方法处理两个业务逻辑 展示页面逻辑 form表单处理
+		//判断请求方式
+		if(IS_POST){
+			//处理表单提交
+			//接收数据
+			$data = I('post.');
+			// $data['goods_create_time'] = time();
+			//添加数据
+			$model = D('Goods');
+			//使用create方法自动创建数据集
+			$create = $model -> create($data);
+			// $create = $model -> create();
+			//创建失败，返回false
+			if(!$create){
+				//从模型中获取失败信息
+				$error = $model -> getError();
+				$this -> error($error);
+			}
+			$res = $model -> add();
+			// $res = $model -> add($data);
+			//判断返回结果
+			if($res){
+				//添加成功
+				$this -> success('添加成功', U('Admin/Goods/index'), 1);
+			}else{
+				//添加失败
+				$this -> error('添加失败');
+			}
+		}else{
+			//展示页面
+			$this -> display();
+		}
+	}
+	//修改页面
+	public function edit(){
+		//一个方法处理两个业务逻辑
+		if(IS_POST){
+			//表单提交
+			//接收数据
+			$data = I('post.');
+			//修改数据表中的记录
+			$model = D('Goods');
+			$res = $model -> save($data);
+			// dump($res);die;
+			//$res 是受影响的记录条数
+			if($res !== false){
+				//修改成功
+				$this -> success('修改成功', U('Admin/Goods/index'));
+			}else{
+				//修改失败
+				$this -> error('修改失败');
+			}
+		}else{
+			//展示页面
+			//接收数据
+			$id = I('get.id');
+			//查询数据
+			$goods = D('Goods') -> where(['id' => $id]) -> find();
+			$this -> assign('goods', $goods);
+			$this -> display();
+		}
+		
+	}
+	//详情页面
+	public function detail(){
+		$this -> display();
+	}
+
+	//删除方法
+	public function del(){
+		//接收参数
+		$id = I('get.id');
+		//删除数据
+		$model = D('Goods');
+		$res = $model -> where(['id' => $id]) -> delete();
+		//成功时 $res 是受影响的记录条数
+		if($res !== false){
+			//删除成功
+			$this -> success('删除成功', U('Admin/Goods/index'));
+		}else{
+			//删除失败
+			$this -> error('删除失败');
+		}
+	}
+}

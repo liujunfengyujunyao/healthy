@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>后台管理系统</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="">
+<meta name="author" content="">
+<link rel="stylesheet" type="text/css" href="__PUBLIC__/Admin/css/main.css">
+<link rel="stylesheet" type="text/css" href="__PUBLIC__/Admin/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="__PUBLIC__/Admin/css/bootstrap-responsive.min.css">
+</head>
+<body>
+
+<include file="Common/header" />
+
+<!-- 右 -->
+<div class="content">
+    <div class="header">
+        <h1 class="page-title">商品编辑</h1>
+    </div>
+    
+    <!-- edit form -->
+    <form action="__SELF__" method="post" id="tab" enctype="multipart/form-data">
+        <input type="hidden" name="id" value="{$goods.id}">
+        <ul class="nav nav-tabs">
+          <li role="presentation" class="active"><a href="#basic" data-toggle="tab">基本信息</a></li>
+          <li role="presentation"><a href="#desc" data-toggle="tab">商品描述</a></li>
+          <li role="presentation"><a href="#attr" data-toggle="tab">商品属性</a></li>
+          <li role="presentation"><a href="#pics" data-toggle="tab">商品相册</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane fade in active" id="basic">
+                <div class="well">
+                    <label>商品名称：</label>
+                    <input type="text" name="goods_name" value="{$goods.goods_name}" class="input-xlarge">
+                    <label>商品价格：</label>
+                    <input type="text" name="goods_price" value="{$goods.goods_price}" class="input-xlarge">
+                    <label>商品数量：</label>
+                    <input type="text" name="goods_number" value="{$goods.goods_number}" class="input-xlarge">
+                    <label>商品logo：</label>
+                    <input type="file" name="" value="" class="input-xlarge">
+                </div>
+            </div>
+            <div class="tab-pane fade in" id="desc">
+                <div class="well">
+                    <label>商品简介：</label>
+                    <textarea value="Smith" name="" rows="3" class="input-xlarge">edit</textarea>
+                </div>
+            </div>
+            <div class="tab-pane fade in" id="attr">
+                <div class="well">
+                    <label>商品分类：</label>
+                    <select name="" class="input-xlarge">
+                        <option value="2">电脑</option>
+                        <option value="1">手机</option>
+                    </select>
+                    <div>
+                        <label>商品品牌：</label>
+                        <input type="text" name="" value="edit" class="input-xlarge">
+                        <label>商品型号：</label>
+                        <input type="text" name="" value="edit" class="input-xlarge">
+                        <label>商品重量：</label>
+                        <input type="text" name="" value="edit" class="input-xlarge">
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade in" id="pics">
+                <div class="well">
+                        <div>[<a href="javascript:void(0);" class="add">+</a>]商品图片：<input type="file" name="goods_pics[]" value="" class="input-xlarge"></div>
+                </div>
+            </div>
+            <button class="btn btn-primary" type="submit">保存</button>
+        </div>
+    </form>
+    <!-- footer -->
+    <footer>
+        <hr>
+        <p>© 2017 <a href="javascript:void(0);" target="_blank">ADMIN</a></p>
+    </footer>
+</div>
+</body>
+<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+<!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+<script src="__PUBLIC__/Admin/js/jquery-1.8.1.min.js"></script>
+<script src="__PUBLIC__/Admin/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+    $(function(){
+        $('.add').click(function(){
+            var add_div = '<div>[<a href="javascript:void(0);" class="sub">-</a>]商品图片：<input type="file" name="goods_pics[]" value="" class="input-xlarge"></div>';
+            $(this).parent().after(add_div);
+        });
+        $('.sub').live('click',function(){
+            $(this).parent().remove();
+        });
+    });
+</script>
+</html>

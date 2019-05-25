@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>静态图</title>
+</head>
+<body>
+	<img src="http://api.map.baidu.com/staticimage/v2?ak=uu8iNydsv0SghQKOvvS8jLGDL0RrU3L8&center=116.403874,39.914888">
+	<img src="{$url}">
+</body>
+</html>

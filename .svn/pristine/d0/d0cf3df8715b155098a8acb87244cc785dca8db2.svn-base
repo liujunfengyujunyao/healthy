@@ -1,0 +1,32 @@
+<?php
+namespace Home\Controller;
+use Think\Controller;
+class IndexController extends Controller {
+    public function index(){
+    	//查询所有的商品分类信息
+    	$category = M('Category') -> select();
+    	$this -> assign('category', $category);
+
+    	//在首页指定显示 分类id 为 8， 13 ， 18三个分类下的商品
+    	$goods8 = D('Goods') -> where(['cate_id' => 8]) -> limit(12) -> select();
+    	$this -> assign('goods8', $goods8);
+    	$goods13 = D('Goods') -> where(['cate_id' => 13]) -> limit(12) -> select();
+    	$this -> assign('goods13', $goods13);
+    	$goods18 = D('Goods') -> where(['cate_id' => 18]) -> limit(12) -> select();
+    	$this -> assign('goods18', $goods18);
+
+    	//获取分类名称
+    	$cate8 = D('Category') -> where(['id' => 8]) -> find();
+    	$this -> assign('cate8', $cate8);
+    	$cate13 = D('Category') -> where(['id' => 13]) -> find();
+    	$this -> assign('cate13', $cate13);
+    	$cate18 = D('Category') -> where(['id' => 18]) -> find();
+    	$this -> assign('cate18', $cate18);
+    	//调用模板文件
+    	// $this -> display();//不传递参数，默认取控制器名和方法名，去View目录找
+    	// layout(true);//layout('layout');
+    	$this -> display('index');//传递参数 模板文件名称（不带后缀）
+
+    	// $this -> diaplsy("/Index/index");//传递参数 /View下的子目录名称/模板文件名称（不带后缀）
+    }
+}
